@@ -60,6 +60,7 @@
           <th class="py-2 pr-4">Status</th>
           <th class="py-2 pr-4 text-right">Packets</th>
           <th class="py-2 pr-4 text-right">Duration</th>
+          <th class="py-2 pr-4">Started</th>
           <th class="py-2 pr-4">Source</th>
           <th class="py-2 pr-4">Parsed</th>
         </tr>
@@ -74,6 +75,9 @@
               {c.first_ts_rel != null && c.last_ts_rel != null
                 ? formatDuration(c.last_ts_rel - c.first_ts_rel)
                 : '—'}
+            </td>
+            <td class="py-2 pr-4 text-[var(--color-fg-muted)] text-xs">
+              {c.started_at ? new Date(c.started_at).toLocaleString() : 'no RTC'}
             </td>
             <td class="py-2 pr-4 text-[var(--color-fg-muted)]">{c.source}</td>
             <td class="py-2 pr-4 text-[var(--color-fg-muted)]">

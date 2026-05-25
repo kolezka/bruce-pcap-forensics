@@ -19,6 +19,9 @@ export interface CaptureRow {
   has_radiotap: 0 | 1;
   error: string | null;
   source: CaptureSource;
+  /** Real-world capture start (UTC ISO 8601) when the source has an RTC.
+   *  NULL for Bruce captures — they have no RTC, so absolute time is meaningless. */
+  started_at: string | null;
 }
 
 export interface PacketRow {

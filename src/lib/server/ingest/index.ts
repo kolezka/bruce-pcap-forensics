@@ -74,9 +74,23 @@ export async function ingestFile(
       }
     });
 
+    // Captures with an RTC (Wireshark / aircrack on a real host) put a real
+    // Unix epoch in frame.frame_time_epoch. Bruce has no RTC so its first
+    // frame starts a few seconds after Jan 1 1970. We sniff the first frame's
+    // epoch and only keep it if it's after 2010-01-01 (sanity threshold).
+    const Y2010 = Date.parse('2010-01-01T00:00:00Z');
+    let startedAt: string | null = null;
+
     for await (const row of streamPackets(filePath)) {
       const p = normalize(row);
-      if (firstTs === null) firstTs = p.ts_rel;
+      if (firstTs === null) {
+        firstTs = p.ts_rel;
+        const epoch = row.layers.frame?.frame_frame_time_epoch as string | undefined;
+        if (epoch) {
+          const t = Date.parse(epoch);
+          if (Number.isFinite(t) && t >= Y2010) startedAt = new Date(t).toISOString();
+        }
+      }
       lastTs = p.ts_rel;
       batch.push(p);
       count++;
@@ -88,8 +102,8 @@ export async function ingestFile(
     runDetectors(db, id);
 
     db.run(
-      `UPDATE captures SET status='ready', parsed_at=?, packet_count=?, first_ts_rel=?, last_ts_rel=? WHERE id=?`,
-      [Date.now(), count, firstTs ?? 0, lastTs, id]
+      `UPDATE captures SET status='ready', parsed_at=?, packet_count=?, first_ts_rel=?, last_ts_rel=?, started_at=? WHERE id=?`,
+      [Date.now(), count, firstTs ?? 0, lastTs, startedAt, id]
     );
   } catch (e) {
     db.run(`UPDATE captures SET status='error', error=? WHERE id=?`, [String(e).slice(0, 1000), id]);

@@ -89,7 +89,8 @@ const MIGRATIONS: string[] = [
     details_json TEXT NOT NULL
   );
   CREATE INDEX idx_events_capture ON events(capture_id);
-  `
+  `,
+  `ALTER TABLE captures ADD COLUMN started_at TEXT;`
 ];
 
 export function migrate(): void {
