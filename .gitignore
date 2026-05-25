@@ -1,8 +1,8 @@
-node_modules
-.svelte-kit
-build
+node_modules/
+.svelte-kit/
+build/
 data/
 captures/
-*.pcap
-!docs/**/*.pcap
 .DS_Store
+.playwright-mcp/
+*.log

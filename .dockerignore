@@ -1,0 +1,10 @@
+node_modules
+.svelte-kit
+build
+data
+captures
+*.pcap
+docs
+tests
+.git
+.playwright-mcp
