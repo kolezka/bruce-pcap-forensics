@@ -14,16 +14,24 @@ function deriveEncryption(extras: Record<string, unknown>): Encryption {
   const hasRsn = extras.rsn === true;
   const hasWpa = extras.wpa === true;
   const privacy = extras.privacy === true;
-  if (hasRsn && hasWpa) return 'WPA2/WPA3';
   if (hasRsn) {
-    const a = Number(extras.rsn_akms ?? 0);
-    if (a === 8 || a === 12 || a === 13) return 'WPA3';
+    // RSN AKM 8/12/13 = SAE (WPA3). Both AKMs (e.g. "1027074,1027080") → mixed WPA2/WPA3.
+    const akmsField = extras.rsn_akms;
+    const akmStr = String(akmsField ?? '');
+    const akms = akmStr.split(',').map((s) => Number(s.trim()) & 0xff);
+    const hasSae = akms.some((a) => a === 8 || a === 12 || a === 13);
+    const hasPsk = akms.some((a) => a === 2 || a === 6);
+    if (hasSae && hasPsk) return 'WPA2/WPA3';
+    if (hasSae) return 'WPA3';
     return 'WPA2';
   }
   if (hasWpa) return 'WPA';
   if (privacy) return 'WEP';
   return 'OPEN';
 }
+
+const BROADCAST = 'ff:ff:ff:ff:ff:ff';
+const NULLMAC = '00:00:00:00:00:00';
 
 export function aggregate(db: Database, captureId: number): void {
   const pkts = db
@@ -67,7 +75,7 @@ export function aggregate(db: Database, captureId: number): void {
     touchDev(p.sa, p.ts_rel);
     touchDev(p.da, p.ts_rel);
 
-    if (p.bssid) {
+    if (p.bssid && p.bssid !== BROADCAST && p.bssid !== NULLMAC) {
       let n = nets.get(p.bssid);
       if (!n) nets.set(p.bssid, (n = {
         ssid: null, channel: null,
