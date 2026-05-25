@@ -12,3 +12,11 @@ export function isLocallyAdministered(mac: string): boolean {
   const first = parseInt(mac.slice(0, 2), 16);
   return (first & 0b10) !== 0;
 }
+
+/** Multicast / broadcast (the I/G bit — LSB of the first octet). Covers
+ *  ff:ff:ff:ff:ff:ff, 01:00:5e:*, 33:33:*, 01:80:c2:*. These are not
+ *  endpoint devices, they are destination groups. */
+export function isMulticast(mac: string): boolean {
+  const first = parseInt(mac.slice(0, 2), 16);
+  return (first & 0b1) === 1;
+}

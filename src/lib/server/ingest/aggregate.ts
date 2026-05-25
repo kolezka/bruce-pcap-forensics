@@ -1,5 +1,5 @@
 import type { Database } from 'bun:sqlite';
-import { lookupVendor } from '../../oui';
+import { lookupVendor, isMulticast } from '../../oui';
 import type { Encryption, DeviceRole } from '../../types';
 
 interface PacketLite {
@@ -54,7 +54,7 @@ export function aggregate(db: Database, captureId: number): void {
   }>();
 
   const touchDev = (mac: string | null, ts: number) => {
-    if (!mac) return null;
+    if (!mac || isMulticast(mac)) return null;
     let d = devs.get(mac);
     if (!d) devs.set(mac, (d = {
       tx: 0, rx: 0, first: ts, last: ts,
@@ -96,12 +96,16 @@ export function aggregate(db: Database, captureId: number): void {
         const d = devs.get(p.bssid); if (d) d.sawAsBssidBeacons++;
       }
       for (const mac of [p.ta, p.ra, p.sa, p.da]) {
-        if (mac && mac !== p.bssid && mac !== 'ff:ff:ff:ff:ff:ff') n.clients.add(mac);
+        if (mac && mac !== p.bssid && !isMulticast(mac) && mac !== NULLMAC) {
+          n.clients.add(mac);
+          // Keep devices.associated_bssids consistent with networks.clients —
+          // any device that touched a BSSID in any role gets it in its assoc set.
+          devs.get(mac)?.assoc.add(p.bssid);
+        }
       }
     }
 
     if (p.type === 0 && p.subtype === 4 && p.ssid && p.ta) devs.get(p.ta)?.probed.add(p.ssid);
-    if (p.bssid && p.ta && p.ta !== p.bssid) devs.get(p.ta)?.assoc.add(p.bssid);
     if (p.channel && p.ta) devs.get(p.ta)?.channels.add(p.channel);
   }
 
