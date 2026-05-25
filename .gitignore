@@ -6,6 +6,7 @@ node_modules/
 /wordlists/
 .DS_Store
 .playwright-mcp/
+docs/superpowers/
 *.log
 *.pcap
 *.pcapng
