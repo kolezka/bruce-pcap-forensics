@@ -88,6 +88,10 @@ export function normalize(row: TsharkRow): NormalizedPacket {
   if (w.wlan_wlan_fc_protected !== undefined) raw_extras.fc_protected = w.wlan_wlan_fc_protected;
   if (m.wlan_wlan_fixed_capabilities_privacy) raw_extras.privacy = true;
   if (m.wlan_wlan_rsn_akms !== undefined) raw_extras.rsn_akms = m.wlan_wlan_rsn_akms;
+  // Protected Management Frames (PMF) capability bits from RSN. Capturing
+  // these lets us detect networks where deauth attacks still work (mfpc=0).
+  if (m.wlan_wlan_rsn_capabilities_mfpc !== undefined) raw_extras.rsn_mfpc = !!m.wlan_wlan_rsn_capabilities_mfpc;
+  if (m.wlan_wlan_rsn_capabilities_mfpr !== undefined) raw_extras.rsn_mfpr = !!m.wlan_wlan_rsn_capabilities_mfpr;
   // WPS presence — any wps_* field in management layer means the beacon /
   // probe response advertises Wi-Fi Protected Setup (Pixie Dust target).
   for (const k of Object.keys(m)) { if (k.startsWith('wps_')) { raw_extras.wps = true; break; } }

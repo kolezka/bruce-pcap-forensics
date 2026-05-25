@@ -4,13 +4,16 @@ export type Encryption = 'OPEN' | 'WEP' | 'WPA' | 'WPA2' | 'WPA3' | 'WPA2/WPA3';
 export type DeviceRole = 'ap' | 'station' | 'unknown';
 export type EventKind =
   | 'deauth_burst'
+  | 'disassoc_burst'
+  | 'auth_flood'
   | 'eapol_handshake'
   | 'karma'
   | 'hidden_ssid'
   | 'channel_hopping'
   | 'wps_enabled'
   | 'evil_twin'
-  | 'weak_crypto';
+  | 'weak_crypto'
+  | 'pmf_disabled';
 export type CrackStatus = 'idle' | 'running' | 'cracked' | 'not_found' | 'error';
 export type Severity = 'info' | 'warn' | 'high';
 
