@@ -81,21 +81,30 @@
     return 'bg-[color-mix(in_oklab,var(--color-sev-high),transparent_70%)] text-[var(--color-sev-high)]';
   }
 
-  async function packageForSsid(h: Hs): Promise<void> {
+  async function attackViaSsid(h: Hs): Promise<void> {
     const ssid = h.ssid;
-    if (!ssid) { alert('SSID is hidden — no target name to package'); return; }
+    if (!ssid) { alert('SSID is hidden — no target name to derive guesses from'); return; }
     genBusyFor = h.id;
     try {
-      const r = await fetch('/api/wordlists/gen-ssid', {
+      const gen = await fetch('/api/wordlists/gen-ssid', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ ssid }),
       });
-      if (!r.ok) { alert('gen-ssid failed: ' + (await r.text())); return; }
-      const { path } = (await r.json()) as { path: string; lines: number };
+      if (!gen.ok) { alert('gen-ssid failed: ' + (await gen.text())); return; }
+      const { path } = (await gen.json()) as { path: string; lines: number };
+
+      const r = await fetch(`/api/handshakes/${h.id}/crack`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ wordlist: path }),
+      });
+      if (!r.ok) { alert('crack failed: ' + (await r.text())); return; }
+
+      const updated = await r.json();
+      handshakes = handshakes.map((x) => (x.id === updated.id ? updated : x));
       wordlists = await fetch('/api/wordlists').then((r) => r.json());
-      pickerOpenFor = h.id;
-      pickedWordlist = path;
+      pickerOpenFor = null;
     } finally {
       genBusyFor = null;
     }
@@ -221,10 +230,10 @@
                 <button
                   class="text-xs rounded-md border border-[var(--color-border)] px-2 py-1 mr-1 hover:border-[var(--color-accent)] disabled:opacity-50"
                   disabled={genBusyFor === h.id}
-                  title="Generate SSID-targeted wordlist (ssid+00..99, years, common suffixes) and pick it"
-                  onclick={() => packageForSsid(h)}
+                  title="One-click attack: generate SSID-derived guesses (ssid+00..99, years, common suffixes) and start aircrack-ng on them"
+                  onclick={() => attackViaSsid(h)}
                 >
-                  {genBusyFor === h.id ? 'packaging…' : 'package for SSID'}
+                  {genBusyFor === h.id ? 'attacking…' : 'attack via SSID'}
                 </button>
               {/if}
               <button
