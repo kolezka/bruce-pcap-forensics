@@ -3,6 +3,19 @@
 Local-first 802.11 pcap forensic dashboard. Built for analyzing captures from
 the Bruce firmware (M5Stack/ESP32 WiFi sniffer).
 
+## Screenshots
+
+| | |
+|---|---|
+| ![Captures list](docs/screenshots/01-captures-list.png) | ![Networks](docs/screenshots/02-networks.png) |
+| Captures list — drag-drop or watcher-ingested pcaps | Global Networks view — aggregated across all captures |
+| ![Devices](docs/screenshots/03-devices.png) | ![Handshakes + wordlists](docs/screenshots/04-handshakes.png) |
+| Global Devices view — vendors, roles, probed SSIDs | Handshakes tab with Wordlists panel, "attack via SSID" one-click action, and keygen hints |
+
+SSIDs, BSSIDs and capture filenames are masked in these screenshots — real
+identifying data is replaced with `Network-N`, `XX:XX:XX` last-3-octets, and
+`capture-hs-N.pcap` placeholders.
+
 ## Requirements
 
 - [Bun](https://bun.sh) 1.3+
