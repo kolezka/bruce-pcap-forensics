@@ -53,9 +53,20 @@ docker run --rm -p 3000:3000 \
 bun test
 ```
 
-24 tests cover the full pipeline against the real Bruce sample pcaps:
+26 tests cover the full pipeline against real Bruce sample pcaps:
 format helpers, OUI lookup, tshark streaming, packet normalization,
 aggregate (networks + devices + encryption derivation), and each detector.
+
+**Test fixtures are not committed** (pcaps are gitignored). To run the tests
+locally, place these two files in `tests/fixtures/`:
+
+- `raw.pcap` — a normal 802.11 sniffer capture (one with networks and
+  devices to detect)
+- `deauth.pcap` — a capture containing deauth/disassoc frames, used to
+  verify the deauth-burst detector
+
+Any Bruce pcap will work for `raw.pcap`. For `deauth.pcap`, run Bruce's
+deauth feature and capture the result.
 
 ## Notes on Bruce captures
 

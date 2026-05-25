@@ -6,3 +6,5 @@ captures/
 .DS_Store
 .playwright-mcp/
 *.log
+*.pcap
+*.pcapng
