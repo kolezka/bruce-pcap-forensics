@@ -47,6 +47,45 @@ docker run --rm -p 3000:3000 \
   pcap-parser
 ```
 
+## Wordlists (handshake cracking)
+
+`wordlists/` is gitignored — populate it with the fetch script:
+
+```bash
+bun run wordlists:fetch                  # SecLists subset + CrackStation + Polish ISP defaults + small crunch lists
+bun run wordlists:fetch -- --skip-crackstation     # skip the ~684 MB extract
+bun run wordlists:fetch -- --crunch-big            # also generate 8-digit (~900 MB)
+bun run wordlists:fetch -- --force                 # redownload / regenerate
+```
+
+What it fetches:
+
+- **SecLists subset** (`seclists-wifi/`) — `probable-v2-wpa-top62/top4800`,
+  `darkweb2017-top10000`, `10-million-top-10000/100000`, `rockyou-75`.
+- **CrackStation** (`crackstation/crackstation-human-only.txt`) — 684 MB of
+  real-world human passwords. ~247 MB compressed download.
+- **crunch-generated** (`generated/`) — needs `crunch` (`brew install crunch`
+  / `apt install crunch`). Default run produces `hex-8-upper` and
+  `pl-mobile-9digit`. `--crunch-big` adds `digits-8` and `hex-10-lower`.
+- **Polish ISP defaults** (`polish-isp-defaults.txt`) — curated common weak
+  PSKs for Funbox / Livebox / PLAY / UPC / T-Mobile / Netia / Vectra etc.
+  Sticker keys are random; this targets the human-changed + factory-weak tail.
+  For serial-derived keygen attacks (UPC, older Liveboxes, Thomson) use
+  dedicated tools (`upc_keys`, `mkr-router-keygen`).
+
+### Custom crunch recipes
+
+```bash
+bun run wordlists:crunch list                   # list recipes
+bun run wordlists:crunch digits-8               # 8-digit numeric (~900 MB)
+bun run wordlists:crunch pl-mobile              # PL mobile-number pattern
+bun run wordlists:crunch hex-8-upper            # 8-char upper hex
+bun run wordlists:crunch ssid-suffix MyNetwork  # SSID + 00..99, years, common suffixes
+```
+
+Files dropped into `wordlists/` (or any subdir — listing is non-recursive) are
+picked up by the UI's handshake-cracking dropdown and passed to `aircrack-ng -w`.
+
 ## Tests
 
 ```bash

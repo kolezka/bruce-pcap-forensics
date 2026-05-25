@@ -10,7 +10,9 @@
     "start": "bun build/index.js",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "test": "bun test tests/",
-    "test:watch": "bun test --watch tests/"
+    "test:watch": "bun test --watch tests/",
+    "wordlists:fetch": "bash scripts/fetch-wordlists.sh",
+    "wordlists:crunch": "bash scripts/gen-crunch.sh"
   },
   "devDependencies": {
     "@sveltejs/adapter-node": "^5.2.0",

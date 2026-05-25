@@ -1,6 +1,6 @@
 import { db } from './db';
 import { readdir, stat } from 'node:fs/promises';
-import { join, resolve, basename } from 'node:path';
+import { join, resolve, sep } from 'node:path';
 import type { HandshakeRow } from '../types';
 
 const CAPTURES_DIR = process.env.PCAP_CAPTURES_DIR ?? 'captures';
@@ -9,18 +9,23 @@ const WORDLISTS_DIR = process.env.PCAP_WORDLISTS_DIR ?? 'wordlists';
 export interface Wordlist { name: string; bytes: number; }
 
 export async function listWordlists(): Promise<Wordlist[]> {
-  try {
-    const entries = await readdir(WORDLISTS_DIR);
-    const out: Wordlist[] = [];
+  const out: Wordlist[] = [];
+  async function walk(dir: string, rel: string): Promise<void> {
+    let entries: string[];
+    try { entries = await readdir(dir); } catch { return; }
     for (const name of entries) {
-      const path = join(WORDLISTS_DIR, name);
+      if (name.startsWith('.')) continue;
+      const full = join(dir, name);
+      const relName = rel ? `${rel}/${name}` : name;
       try {
-        const s = await stat(path);
-        if (s.isFile()) out.push({ name, bytes: s.size });
+        const s = await stat(full);
+        if (s.isFile()) out.push({ name: relName, bytes: s.size });
+        else if (s.isDirectory()) await walk(full, relName);
       } catch { /* skip */ }
     }
-    return out.sort((a, b) => a.name.localeCompare(b.name));
-  } catch { return []; }
+  }
+  await walk(WORDLISTS_DIR, '');
+  return out.sort((a, b) => a.name.localeCompare(b.name));
 }
 
 export function getHandshake(id: number): HandshakeRow | null {
@@ -32,12 +37,13 @@ export async function startCrack(handshakeId: number, wordlistName: string): Pro
   if (!hs) throw new Error('handshake not found');
   if (hs.crack_status === 'running') throw new Error('crack already running');
 
-  const safe = basename(wordlistName);
-  const wlPath = resolve(WORDLISTS_DIR, safe);
-  const wlRoot = resolve(WORDLISTS_DIR) + '/';
+  if (wordlistName.includes('\0')) throw new Error('invalid wordlist name');
+  const wlPath = resolve(WORDLISTS_DIR, wordlistName);
+  const wlRoot = resolve(WORDLISTS_DIR) + sep;
   if (!wlPath.startsWith(wlRoot)) throw new Error('wordlist path escape');
   const wlFile = Bun.file(wlPath);
-  if (!(await wlFile.exists())) throw new Error('wordlist not found: ' + safe);
+  if (!(await wlFile.exists())) throw new Error('wordlist not found: ' + wordlistName);
+  const safe = wordlistName;
 
   const cap = db
     .query<{ filename: string }, [number]>(`SELECT filename FROM captures WHERE id=?`)
