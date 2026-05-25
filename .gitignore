@@ -1,9 +1,9 @@
 node_modules/
 .svelte-kit/
-build/
-data/
-captures/
-wordlists/
+/build/
+/data/
+/captures/
+/wordlists/
 .DS_Store
 .playwright-mcp/
 *.log
