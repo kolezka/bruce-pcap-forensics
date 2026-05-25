@@ -90,7 +90,30 @@ const MIGRATIONS: string[] = [
   );
   CREATE INDEX idx_events_capture ON events(capture_id);
   `,
-  `ALTER TABLE captures ADD COLUMN started_at TEXT;`
+  `ALTER TABLE captures ADD COLUMN started_at TEXT;`,
+  `
+  CREATE TABLE handshakes (
+    id INTEGER PRIMARY KEY,
+    capture_id INTEGER NOT NULL REFERENCES captures(id) ON DELETE CASCADE,
+    ap_mac TEXT NOT NULL,
+    sta_mac TEXT NOT NULL,
+    bssid TEXT NOT NULL,
+    ssid TEXT,
+    frame_count INTEGER NOT NULL,
+    ts_rel_start REAL NOT NULL,
+    ts_rel_end REAL NOT NULL,
+    is_complete INTEGER NOT NULL DEFAULT 0,
+    crack_status TEXT NOT NULL DEFAULT 'idle',
+    crack_password TEXT,
+    crack_log TEXT,
+    crack_started_at INTEGER,
+    crack_finished_at INTEGER,
+    crack_keys_tested INTEGER,
+    crack_wordlist TEXT,
+    UNIQUE (capture_id, ap_mac, sta_mac)
+  );
+  CREATE INDEX idx_handshakes_capture ON handshakes(capture_id);
+  `
 ];
 
 export function migrate(): void {

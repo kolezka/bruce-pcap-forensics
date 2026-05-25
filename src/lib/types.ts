@@ -2,7 +2,16 @@ export type CaptureStatus = 'pending' | 'parsing' | 'ready' | 'error';
 export type CaptureSource = 'upload' | 'watch';
 export type Encryption = 'OPEN' | 'WEP' | 'WPA' | 'WPA2' | 'WPA3' | 'WPA2/WPA3';
 export type DeviceRole = 'ap' | 'station' | 'unknown';
-export type EventKind = 'deauth_burst' | 'eapol_handshake' | 'karma' | 'hidden_ssid' | 'channel_hopping';
+export type EventKind =
+  | 'deauth_burst'
+  | 'eapol_handshake'
+  | 'karma'
+  | 'hidden_ssid'
+  | 'channel_hopping'
+  | 'wps_enabled'
+  | 'evil_twin'
+  | 'weak_crypto';
+export type CrackStatus = 'idle' | 'running' | 'cracked' | 'not_found' | 'error';
 export type Severity = 'info' | 'warn' | 'high';
 
 export interface CaptureRow {
@@ -72,6 +81,26 @@ export interface DeviceRow {
   probed_ssids_json: string;
   associated_bssids_json: string;
   channels_json: string;
+}
+
+export interface HandshakeRow {
+  id: number;
+  capture_id: number;
+  ap_mac: string;
+  sta_mac: string;
+  bssid: string;
+  ssid: string | null;
+  frame_count: number;
+  ts_rel_start: number;
+  ts_rel_end: number;
+  is_complete: 0 | 1;
+  crack_status: CrackStatus;
+  crack_password: string | null;
+  crack_log: string | null;
+  crack_started_at: number | null;
+  crack_finished_at: number | null;
+  crack_keys_tested: number | null;
+  crack_wordlist: string | null;
 }
 
 export interface EventRow {

@@ -1,5 +1,5 @@
 import { db } from './db';
-import type { CaptureRow, NetworkRow, DeviceRow, EventRow, PacketRow } from '../types';
+import type { CaptureRow, NetworkRow, DeviceRow, EventRow, PacketRow, HandshakeRow } from '../types';
 
 export function listCaptures(): CaptureRow[] {
   return db.query<CaptureRow, []>(`SELECT * FROM captures ORDER BY uploaded_at DESC`).all();
@@ -22,6 +22,12 @@ export function listDevices(captureId: number): DeviceRow[] {
     .query<DeviceRow, [number]>(
       `SELECT * FROM devices WHERE capture_id=? ORDER BY (packets_tx + packets_rx) DESC`
     )
+    .all(captureId);
+}
+
+export function listHandshakes(captureId: number): HandshakeRow[] {
+  return db
+    .query<HandshakeRow, [number]>(`SELECT * FROM handshakes WHERE capture_id=? ORDER BY ts_rel_start ASC`)
     .all(captureId);
 }
 

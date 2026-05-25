@@ -3,6 +3,7 @@ node_modules/
 build/
 data/
 captures/
+wordlists/
 .DS_Store
 .playwright-mcp/
 *.log

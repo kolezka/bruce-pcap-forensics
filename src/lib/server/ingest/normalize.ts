@@ -88,6 +88,9 @@ export function normalize(row: TsharkRow): NormalizedPacket {
   if (w.wlan_wlan_fc_protected !== undefined) raw_extras.fc_protected = w.wlan_wlan_fc_protected;
   if (m.wlan_wlan_fixed_capabilities_privacy) raw_extras.privacy = true;
   if (m.wlan_wlan_rsn_akms !== undefined) raw_extras.rsn_akms = m.wlan_wlan_rsn_akms;
+  // WPS presence — any wps_* field in management layer means the beacon /
+  // probe response advertises Wi-Fi Protected Setup (Pixie Dust target).
+  for (const k of Object.keys(m)) { if (k.startsWith('wps_')) { raw_extras.wps = true; break; } }
   if (row.layers.eapol) raw_extras.eapol = row.layers.eapol;
 
   return {
